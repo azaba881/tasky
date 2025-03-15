@@ -1,8 +1,10 @@
 import TaskList from "@/components/task-list"
 import { DashboardStats } from "@/components/dashboard-stats"
 import { AddTaskButton } from "@/components/add-task-button"
+import { auth } from '@clerk/nextjs/server'
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const { userId } = await auth()
   return (
     <main className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-8">
@@ -10,11 +12,11 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <DashboardStats />
-        </div>
+        </div>   
 
         <div className="bg-card rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">Today&apos;s Tasks</h2>
-          <TaskList />
+          <TaskList />  
         </div>
       </div>
       <AddTaskButton />

@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dialog"
 import LoginForm from "@/components/login-form"
 import Image from "next/image"
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
+import { usePathname } from "next/navigation"
 
 export default function LandingNavbar() {
   const { theme, setTheme } = useTheme()
@@ -24,7 +26,7 @@ export default function LandingNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [loginDialogOpen, setLoginDialogOpen] = useState(false)
   const [signupMode, setSignupMode] = useState(false)
-
+  const pathname = usePathname();
   const toggleLanguage = () => {
     setLanguage(language === "fr" ? "en" : "fr")
   }
@@ -34,6 +36,7 @@ export default function LandingNavbar() {
       features: "Fonctionnalités",
       pricing: "Tarifs",
       testimonials: "Témoignages",
+      contact : "Contactez nous",
       login: "Connexion",
       signup: "S'inscrire",
       switchToSignup: "Pas de compte ? S'inscrire",
@@ -42,6 +45,7 @@ export default function LandingNavbar() {
     en: {
       features: "Features",
       pricing: "Pricing",
+      contact : "Contact us",
       testimonials: "Testimonials",
       login: "Login",
       signup: "Sign Up",
@@ -86,6 +90,12 @@ export default function LandingNavbar() {
           <Link href="#pricing" className="text-sm font-medium hover:text-primary">
             {t.pricing}
           </Link>
+          <Link href="#" className="text-sm font-medium hover:text-primary">
+            {t.contact}
+          </Link>
+          <Link href="#" className="text-sm font-medium hover:text-primary">
+            Blog
+          </Link>
         </nav>
 
         {/* Desktop Actions */}
@@ -113,7 +123,7 @@ export default function LandingNavbar() {
             <span className="sr-only">Toggle theme</span>
           </Button>
 
-          <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
+          {/* <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon">
                 <User className="h-5 w-5" />
@@ -136,16 +146,34 @@ export default function LandingNavbar() {
               </DialogHeader>
               <LoginForm />
             </DialogContent>
-          </Dialog>
-
-          <Button
+          </Dialog> */}
+          
+          <SignedOut>
+            {(pathname === "/sign-in" || pathname === "/sign-up") ? null : (
+              <>
+                <Button size="lg" className="bg-primary hover:bg-primary/90">
+                  <Link href="/sign-in">
+                    Connexion
+                  </Link>
+                </Button>                
+              </>
+            )}
+          </SignedOut>
+          <SignedIn>
+            <Button size="lg" className="bg-primary hover:bg-primary/90">
+              <Link href="/dashboard">
+                Dashboard
+              </Link>
+            </Button>
+          </SignedIn>
+          {/* <Button
             onClick={() => {
               setSignupMode(false)
               setLoginDialogOpen(true)
             }}
           >
             {t.login}
-          </Button>
+          </Button> */}
         </div>
 
         {/* Mobile Menu Button */}
@@ -196,7 +224,7 @@ export default function LandingNavbar() {
                 <span className="sr-only">Toggle language</span>
               </Button>
               <Button
-                variant="ghost"
+                variant="ghost"  
                 size="icon"
                 onClick={() => {
                   setTheme(theme === "dark" ? "light" : "dark")

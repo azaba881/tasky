@@ -1,4 +1,4 @@
-"use client"
+"use client"  
 
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -33,7 +33,7 @@ export default function TaskList() {
 
       <TabsContent value="all" className="space-y-4">
         {tasks.map((task) => (
-          <TaskItem
+          <TaskItem       
             key={task.id}
             task={task}
             onStatusChange={(status) => updateTaskStatus(task.id, status)}

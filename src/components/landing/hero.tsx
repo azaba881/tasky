@@ -19,7 +19,9 @@ export default function Hero(){
                             </p>
                             <div className="flex flex-col gap-2 min-[400px]:flex-row">
                                 <Button size="lg" className="bg-primary hover:bg-primary/90">
-                                    Commencer gratuitement
+                                    <Link href="/sign-up">
+                                        Commencer maintenant
+                                    </Link>
                                 </Button>
                                 <Button size="lg" variant="outline">
                                     <Link href="/dashboard" className="size-lg">

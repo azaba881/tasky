@@ -1,8 +1,8 @@
 "use client"
+  
+import type React from "react"  
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState } from "react"   
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -15,19 +15,44 @@ export function AddTaskButton() {
   const [taskTitle, setTaskTitle] = useState("")
   const [date, setDate] = useState<Date | undefined>(new Date())
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Capitalize first letter
     const capitalizedTitle = taskTitle.charAt(0).toUpperCase() + taskTitle.slice(1)
-
-    // Here you would typically save the task to your state or backend
-    console.log("Creating task:", { title: capitalizedTitle, date })
-
-    // Reset form and close dialog
-    setTaskTitle("")
-    setDate(new Date())
-    setOpen(false)
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: capitalizedTitle,
+          date,
+          status: "not-started",
+          important: false,
+        }),
+      })
+  
+      // Vérifie le statut de la réponse
+      
+      if (!response.ok) {
+        throw new Error(`Failed to create task. Status: ${response.status}`)
+      }
+  
+      // Tenter de récupérer le corps de la réponse en JSON uniquement si la réponse est correcte
+      const responseBody = await response.json()
+      console.log("Response Body:", responseBody)
+  
+      // Reset form and close dialog
+      setTaskTitle("")
+      setDate(new Date())
+      setOpen(false)
+      console.log("New Task Created:", responseBody)
+    } catch (error) {
+      console.error("Error during task creation:", error)
+    }
   }
+  
+  
 
   return (
     <>
@@ -54,13 +79,16 @@ export function AddTaskButton() {
                 value={taskTitle}
                 onChange={(e) => setTaskTitle(e.target.value)}
                 placeholder="Enter your task"
-                required
+                
               />
+              {!taskTitle && <p>veuillez entrer le title</p>}
             </div>
 
             <div className="space-y-2">
               <Label>Due Date</Label>
               <DatePicker date={date} setDate={setDate} />
+              {!date && <p className="text-red-500 text-sm">Veuillez choisir une date.</p>}
+
             </div>
 
             <Button type="submit" className="w-full">

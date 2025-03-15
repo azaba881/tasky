@@ -7,6 +7,7 @@ import { Home, Calendar, BarChart2, User, Sun, Moon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 import Image from "next/image"
+import { SignedIn, UserButton } from "@clerk/nextjs"
 
 export default function AppNavbar() {
   const pathname = usePathname()
@@ -19,8 +20,8 @@ export default function AppNavbar() {
   }, [])
 
   // Don't show navbar on landing page
-  if (pathname === "/") return null
-
+  if (pathname === "/" || pathname === "/sign-up" || pathname === "/sign-in") return null
+  
   return (
     <header className="border-b bg-background px-6">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -77,10 +78,9 @@ export default function AppNavbar() {
             </Button>
           )}
 
-          <Button variant="ghost" size="icon">
-            <User className="h-4 w-4" />
-            <span className="sr-only">User profile</span>
-          </Button>
+          <SignedIn>
+              <UserButton />
+          </SignedIn>
         </nav>
       </div>
     </header>

@@ -4,8 +4,9 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import AppNavbar from "@/components/app-navbar"
-
+import {  ClerkProvider,} from '@clerk/nextjs'
 const inter = Inter({ subsets: ["latin"] })
+import { frFR } from '@clerk/localizations'
 
 export const metadata: Metadata = {
   title: "Tasky | Todo List Application",
@@ -18,14 +19,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <AppNavbar />
-          {children}
-        </ThemeProvider>  
-      </body>
-    </html>
+    <ClerkProvider localization={frFR}>
+      <html lang="en" suppressHydrationWarning>
+        <body className={inter.className}>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <AppNavbar />
+            {children}
+          </ThemeProvider>  
+        </body>
+      </html>
+    </ClerkProvider>
+
   )
 }
 

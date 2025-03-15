@@ -37,7 +37,7 @@ export function TaskItem({ task, onStatusChange, onToggleImportant }: TaskItemPr
       <CardContent className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Button
-            variant="ghost"
+            variant="ghost"    
             size="icon"
             onClick={onToggleImportant}
             className={task.important ? "text-yellow-500" : "text-gray-300"}
