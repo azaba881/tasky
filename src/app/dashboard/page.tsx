@@ -2,8 +2,8 @@
 import { AddTaskButton } from "@/components/add-task-button";
 import { DashboardStats } from "@/components/dashboard-stats";
 import { TaskList } from "@/components/task-list";
-import { useEffect, useState } from "react";
 import { Task } from "@/types"; // Importez le type Task
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
