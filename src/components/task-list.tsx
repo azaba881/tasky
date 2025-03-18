@@ -1,27 +1,17 @@
-"use client"  
+"use client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TaskItem } from "@/components/task-item";
+import { Task } from "@/types"; // Importez le type Task
 
-import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TaskItem } from "@/components/task-item"
+type TaskListProps = {
+  tasks: Task[];
+  onStatusChange: (id: number, status: "not-started" | "in-progress" | "completed") => void;
+  onToggleImportant: (id: number) => void;
+};
 
-// Mock data for demonstration
-const INITIAL_TASKS = [
-  { id: 1, title: "Complete project proposal", status: "in-progress", date: new Date(), important: false },
-  { id: 2, title: "Schedule team meeting", status: "not-started", date: new Date(), important: true },
-  { id: 3, title: "Review client feedback", status: "completed", date: new Date(), important: false },
-  { id: 4, title: "Update documentation", status: "not-started", date: new Date(), important: false },
-]
-
-export default function TaskList() {
-  const [tasks, setTasks] = useState(INITIAL_TASKS)
-
-  const updateTaskStatus = (id: number, status: string) => {
-    setTasks(tasks.map((task) => (task.id === id ? { ...task, status } : task)))
-  }
-
-  const markAsImportant = (id: number) => {
-    setTasks(tasks.map((task) => (task.id === id ? { ...task, important: !task.important } : task)))
-  }
+export function TaskList({ tasks, onStatusChange, onToggleImportant }: TaskListProps) {
+  // Get today's date for filtering
+  const today = new Date();
 
   return (
     <Tabs defaultValue="all" className="w-full">
@@ -31,34 +21,36 @@ export default function TaskList() {
         <TabsTrigger value="important">Important</TabsTrigger>
       </TabsList>
 
+      {/* All Tasks Tab */}
       <TabsContent value="all" className="space-y-4">
         {tasks.map((task) => (
-          <TaskItem       
+          <TaskItem
             key={task.id}
             task={task}
-            onStatusChange={(status) => updateTaskStatus(task.id, status)}
-            onToggleImportant={() => markAsImportant(task.id)}
+            onStatusChange={(status) => onStatusChange(task.id, status)}
+            onToggleImportant={() => onToggleImportant(task.id)}
           />
         ))}
       </TabsContent>
 
+      {/* Today's Tasks Tab */}
       <TabsContent value="today" className="space-y-4">
         {tasks
           .filter((task) => {
-            const today = new Date()
-            const taskDate = new Date(task.date)
-            return taskDate.toDateString() === today.toDateString()
+            const taskDate = new Date(task.date);
+            return taskDate.toDateString() === today.toDateString();
           })
           .map((task) => (
             <TaskItem
               key={task.id}
               task={task}
-              onStatusChange={(status) => updateTaskStatus(task.id, status)}
-              onToggleImportant={() => markAsImportant(task.id)}
+              onStatusChange={(status) => onStatusChange(task.id, status)}
+              onToggleImportant={() => onToggleImportant(task.id)}
             />
           ))}
       </TabsContent>
 
+      {/* Important Tasks Tab */}
       <TabsContent value="important" className="space-y-4">
         {tasks
           .filter((task) => task.important)
@@ -66,12 +58,11 @@ export default function TaskList() {
             <TaskItem
               key={task.id}
               task={task}
-              onStatusChange={(status) => updateTaskStatus(task.id, status)}
-              onToggleImportant={() => markAsImportant(task.id)}
+              onStatusChange={(status) => onStatusChange(task.id, status)}
+              onToggleImportant={() => onToggleImportant(task.id)}
             />
           ))}
       </TabsContent>
     </Tabs>
-  )
+  );
 }
-

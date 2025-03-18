@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Home, Calendar, BarChart2, User, Sun, Moon } from "lucide-react"
+import { Home, Calendar, BarChart2, Sun, Moon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 import Image from "next/image"

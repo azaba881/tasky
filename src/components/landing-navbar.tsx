@@ -5,27 +5,16 @@ import Link from "next/link"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Moon, Sun, Globe, User, Menu, X } from "lucide-react"
+import { Moon, Sun, Globe, Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import LoginForm from "@/components/login-form"
 import Image from "next/image"
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
+import { SignedIn, SignedOut } from "@clerk/nextjs"
 import { usePathname } from "next/navigation"
 
 export default function LandingNavbar() {
   const { theme, setTheme } = useTheme()
   const [language, setLanguage] = useState<"fr" | "en">("fr")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [loginDialogOpen, setLoginDialogOpen] = useState(false)
-  const [signupMode, setSignupMode] = useState(false)
   const pathname = usePathname();
   const toggleLanguage = () => {
     setLanguage(language === "fr" ? "en" : "fr")
@@ -121,33 +110,7 @@ export default function LandingNavbar() {
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
-          </Button>
-
-          {/* <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-                <span className="sr-only">User menu</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>{signupMode ? t.signup : t.login}</DialogTitle>
-                <DialogDescription>
-                  {signupMode ? t.switchToLogin : t.switchToSignup}
-                  <Button
-                    variant="link"
-                    className="pl-2 h-auto"
-                    onClick={() => setSignupMode(!signupMode)}
-                  >
-                    {signupMode ? t.login : t.signup}
-                  </Button>
-                </DialogDescription>
-              </DialogHeader>
-              <LoginForm />
-            </DialogContent>
-          </Dialog> */}
-          
+          </Button>         
           <SignedOut>
             {(pathname === "/sign-in" || pathname === "/sign-up") ? null : (
               <>
@@ -166,14 +129,6 @@ export default function LandingNavbar() {
               </Link>
             </Button>
           </SignedIn>
-          {/* <Button
-            onClick={() => {
-              setSignupMode(false)
-              setLoginDialogOpen(true)
-            }}
-          >
-            {t.login}
-          </Button> */}
         </div>
 
         {/* Mobile Menu Button */}
@@ -234,16 +189,7 @@ export default function LandingNavbar() {
                 <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                 <span className="sr-only">Toggle theme</span>
-              </Button>
-              <Button
-                onClick={() => {
-                  setSignupMode(false)
-                  setLoginDialogOpen(true)
-                  setMobileMenuOpen(false)
-                }}
-              >
-                {t.login}
-              </Button>
+              </Button>              
             </div>
           </div>
         </div>

@@ -17,7 +17,7 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String      @id
   email     String   @unique
   tasks     Task[]   @relation("UserTasks") // Relation vers Task
   createdAt DateTime @default(now())
@@ -29,6 +29,6 @@ model Task {
   status    String   @default("not-started")
   date      DateTime @default(now())
   important Boolean  @default(false)
-  userId    Int
+  userId    String
   user      User     @relation("UserTasks", fields: [userId], references: [id]) // Relation vers User
 }
