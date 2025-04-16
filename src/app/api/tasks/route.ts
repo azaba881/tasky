@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getTasks, createTask, updateTask, deleteTask } from "@/lib/db";
+import { generateText } from "@/app/services/openai";
 
 // GET /api/tasks
 export async function GET() {
@@ -21,10 +22,30 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     console.log("POST /api/tasks - Début de la requête");
-    const task = await request.json();
-    console.log("POST /api/tasks - Données reçues:", task);
+    const data = await request.json();
+    console.log("POST /api/tasks - Données reçues:", data);
 
-    if (!task.title) {
+    // Si c'est une requête de génération de suggestions
+    if (data.generateSuggestions) {
+      const prompt = `Générer 3 suggestions de tâches similaires à : "${data.title}"`;
+      const suggestions = await generateText(prompt);
+      
+      if (suggestions) {
+        // Diviser le texte en suggestions individuelles
+        const suggestionsList = suggestions
+          .split('\n')
+          .filter(s => s.trim())
+          .map(s => s.trim().replace(/^\d+\.\s*/, ''))
+          .slice(0, 3);
+        
+        return NextResponse.json({ suggestions: suggestionsList });
+      } else {
+        return NextResponse.json({ suggestions: [] });
+      }
+    }
+
+    // Sinon, c'est une création de tâche normale
+    if (!data.title) {
       console.error("POST /api/tasks - Titre manquant");
       return NextResponse.json(
         { error: "Le titre est requis" },
@@ -32,7 +53,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const newTask = await createTask(task);
+    const newTask = await createTask(data);
     console.log("POST /api/tasks - Tâche créée:", newTask);
     return NextResponse.json(newTask);
   } catch (error) {

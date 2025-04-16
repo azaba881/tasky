@@ -21,38 +21,52 @@ export function AddTaskButton({ onAddTask }: AddTaskButtonProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
+
   // Générer des suggestions automatiquement
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
     if (taskTitle.length > 3) {
       setError(null);
+      setIsGeneratingSuggestions(true);
 
-      // Appeler l'API pour générer des suggestions
-      fetch("/api/tasks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          title: taskTitle,
-          generateSuggestions: true 
-        }),
-      })
-        .then((response) => {
+      // Ajouter un délai pour éviter trop de requêtes
+      timeoutId = setTimeout(async () => {
+        try {
+          const response = await fetch("/api/tasks", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ 
+              title: taskTitle,
+              generateSuggestions: true 
+            }),
+          });
+
           if (!response.ok) {
             throw new Error("Échec de la génération des suggestions.");
           }
-          return response.json();
-        })
-        .then((data) => {
+
+          const data = await response.json();
           setSuggestions(data.suggestions || []);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error("Erreur lors de la génération des suggestions :", error);
           setError("Erreur lors de la génération des suggestions.");
-        });
+        } finally {
+          setIsGeneratingSuggestions(false);
+        }
+      }, 500); // Attendre 500ms après la dernière frappe
     } else {
-      setSuggestions([]); // Réinitialiser les suggestions si l'entrée est trop courte
+      setSuggestions([]);
     }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [taskTitle]);
 
   // Soumettre la tâche
@@ -79,7 +93,7 @@ export function AddTaskButton({ onAddTask }: AddTaskButtonProps) {
         },
         body: JSON.stringify({
           title: capitalizedTitle,
-          date,
+          date: date.toISOString(),
           status: "not-started",
           important: false,
           userId,

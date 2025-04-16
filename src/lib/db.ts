@@ -1,27 +1,15 @@
-import { sql } from '@vercel/postgres';
+import { prisma } from './prisma';
 
 export async function createTables() {
   try {
-    console.log("Tentative de création des tables...");
-    await sql`
-      CREATE TABLE IF NOT EXISTS tasks (
-        id SERIAL PRIMARY KEY,
-        title TEXT NOT NULL,
-        description TEXT,
-        status TEXT DEFAULT 'pending',
-        due_date TIMESTAMP,
-        date TEXT,
-        important BOOLEAN DEFAULT false,
-        is_important BOOLEAN DEFAULT false,
-        user_id TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-    console.log("Tables créées avec succès");
+    console.log("Vérification de la connexion à la base de données...");
+    // Test de la connexion
+    await prisma.$connect();
+    console.log("Connexion à la base de données réussie");
+    return true;
   } catch (error) {
-    console.error("Erreur détaillée lors de la création des tables:", error);
-    throw new Error(`Erreur lors de la création des tables: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error("Erreur détaillée lors de la connexion à la base de données:", error);
+    throw new Error(`Erreur lors de la connexion à la base de données: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -29,12 +17,13 @@ export async function createTables() {
 export async function getTasks() {
   try {
     console.log("Tentative de récupération des tâches...");
-    const result = await sql`
-      SELECT * FROM tasks
-      ORDER BY created_at DESC;
-    `;
-    console.log(`${result.rowCount} tâches récupérées`);
-    return result.rows;
+    const tasks = await prisma.task.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    console.log(`${tasks.length} tâches récupérées`);
+    return tasks;
   } catch (error) {
     console.error("Erreur détaillée lors de la récupération des tâches:", error);
     throw new Error(`Erreur lors de la récupération des tâches: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -63,31 +52,20 @@ export async function createTask({
 }) {
   try {
     console.log("Tentative de création d'une nouvelle tâche:", { title, status });
-    const result = await sql`
-      INSERT INTO tasks (
+    const task = await prisma.task.create({
+      data: {
         title,
         description,
         status,
-        due_date,
+        dueDate: dueDate ? new Date(dueDate) : null,
         date,
         important,
-        is_important,
-        user_id
-      )
-      VALUES (
-        ${title},
-        ${description},
-        ${status},
-        ${dueDate ? new Date(dueDate) : null},
-        ${date},
-        ${important},
-        ${isImportant},
-        ${userId}
-      )
-      RETURNING *;
-    `;
-    console.log("Tâche créée avec succès:", result.rows[0]);
-    return result.rows[0];
+        isImportant,
+        userId,
+      }
+    });
+    console.log("Tâche créée avec succès:", task);
+    return task;
   } catch (error) {
     console.error("Erreur détaillée lors de la création de la tâche:", error);
     throw new Error(`Erreur lors de la création de la tâche: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -109,22 +87,20 @@ export async function updateTask(
 ) {
   try {
     console.log("Tentative de mise à jour de la tâche:", { id, updates });
-    const result = await sql`
-      UPDATE tasks
-      SET
-        title = COALESCE(${updates.title}, title),
-        description = COALESCE(${updates.description}, description),
-        status = COALESCE(${updates.status}, status),
-        due_date = COALESCE(${updates.dueDate ? new Date(updates.dueDate) : null}, due_date),
-        date = COALESCE(${updates.date}, date),
-        important = COALESCE(${updates.important}, important),
-        is_important = COALESCE(${updates.isImportant}, is_important),
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${id}
-      RETURNING *;
-    `;
-    console.log("Tâche mise à jour avec succès:", result.rows[0]);
-    return result.rows[0];
+    const task = await prisma.task.update({
+      where: { id },
+      data: {
+        title: updates.title,
+        description: updates.description,
+        status: updates.status,
+        dueDate: updates.dueDate ? new Date(updates.dueDate) : undefined,
+        date: updates.date,
+        important: updates.important,
+        isImportant: updates.isImportant,
+      }
+    });
+    console.log("Tâche mise à jour avec succès:", task);
+    return task;
   } catch (error) {
     console.error("Erreur détaillée lors de la mise à jour de la tâche:", error);
     throw new Error(`Erreur lors de la mise à jour de la tâche: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -135,13 +111,11 @@ export async function updateTask(
 export async function deleteTask(id: number) {
   try {
     console.log("Tentative de suppression de la tâche:", id);
-    const result = await sql`
-      DELETE FROM tasks
-      WHERE id = ${id}
-      RETURNING *;
-    `;
+    const task = await prisma.task.delete({
+      where: { id }
+    });
     console.log("Tâche supprimée avec succès");
-    return result.rows[0];
+    return task;
   } catch (error) {
     console.error("Erreur détaillée lors de la suppression de la tâche:", error);
     throw new Error(`Erreur lors de la suppression de la tâche: ${error instanceof Error ? error.message : 'Unknown error'}`);
