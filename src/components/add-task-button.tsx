@@ -27,12 +27,15 @@ export function AddTaskButton({ onAddTask }: AddTaskButtonProps) {
       setError(null);
 
       // Appeler l'API pour générer des suggestions
-      fetch("/api/tasks/suggestions", {
+      fetch("/api/tasks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ input: taskTitle }),
+        body: JSON.stringify({ 
+          title: taskTitle,
+          generateSuggestions: true 
+        }),
       })
         .then((response) => {
           if (!response.ok) {
@@ -41,12 +44,12 @@ export function AddTaskButton({ onAddTask }: AddTaskButtonProps) {
           return response.json();
         })
         .then((data) => {
-          setSuggestions(data.suggestions);
+          setSuggestions(data.suggestions || []);
         })
         .catch((error) => {
           console.error("Erreur lors de la génération des suggestions :", error);
           setError("Erreur lors de la génération des suggestions.");
-        })
+        });
     } else {
       setSuggestions([]); // Réinitialiser les suggestions si l'entrée est trop courte
     }

@@ -5,12 +5,13 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import AppNavbar from "@/components/app-navbar"
 import {  ClerkProvider,} from '@clerk/nextjs'
+import { LanguageProvider } from "@/hooks/use-language"
 const inter = Inter({ subsets: ["latin"] })
 import { frFR } from '@clerk/localizations'
 
 export const metadata: Metadata = {
-  title: "Tasky | Todo List Application",
-  description: "A modern todo list application for managing your tasks",
+  title: "Tasky - Gestion de tâches simplifiée",
+  description: "Tasky vous aide à organiser votre travail, augmenter votre productivité et ne plus jamais manquer une échéance.",
 }
 
 export default function RootLayout({
@@ -20,11 +21,13 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider localization={frFR}>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="fr" suppressHydrationWarning>
         <body className={inter.className}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <AppNavbar />
-            {children}
+            <LanguageProvider>
+              <AppNavbar />
+              {children}
+            </LanguageProvider>
           </ThemeProvider>  
         </body>
       </html>

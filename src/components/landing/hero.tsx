@@ -1,31 +1,35 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "../ui/button";
 import Image from "next/image";
+import { useLanguage } from "@/hooks/use-language";
 
-export default function Hero(){
+export default function Hero() {
+    const { t } = useLanguage();
+
     return (
         <div>
             <section className="py-12">
                 <div className="container px-4 md:px-6">
                     <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
                         <div className="space-y-4">
-                            <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">✨ Simplifiez votre quotidien</div>
+                            <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">
+                                {t.hero.tagline}
+                            </div>
                             <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                                Gérez vos tâches comme jamais auparavant
+                                {t.hero.title}
                             </h1>
                             <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                                Tasky vous aide à organiser votre travail, augmenter votre productivité et ne plus jamais manquer
-                                une échéance.
+                                {t.hero.description}
                             </p>
                             <div className="flex flex-col gap-2 min-[400px]:flex-row">
                                 <Button size="lg" className="bg-primary hover:bg-primary/90">
-                                    <Link href="/sign-up">
-                                        Commencer maintenant
-                                    </Link>
+                                    <Link href="/sign-up">{t.hero.startNow}</Link>
                                 </Button>
                                 <Button size="lg" variant="outline">
                                     <Link href="/dashboard" className="size-lg">
-                                        Allez sur le dashbord
+                                        {t.hero.goToDashboard}
                                     </Link>
                                 </Button>
                             </div>

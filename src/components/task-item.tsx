@@ -4,16 +4,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Clock, CheckCircle, Trash } from "lucide-react";
+import { Star, Clock, CheckCircle, Trash, Trash2 } from "lucide-react";
 import { Task } from "@/types";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { useLanguage } from "@/hooks/use-language";
 
 type TaskItemProps = {
   task: Task;
   onStatusChange: (status: "not-started" | "in-progress" | "completed") => void;
   onToggleImportant: () => void;
+  onDelete: () => void;
 };
 
-export function TaskItem({ task, onStatusChange, onToggleImportant }: TaskItemProps) {
+const statusLabels = {
+  "not-started": "Non commencé",
+  "in-progress": "En cours",
+  "completed": "Terminé",
+};
+
+export function TaskItem({ task, onStatusChange, onToggleImportant, onDelete }: TaskItemProps) {
+  const { t } = useLanguage();
+  
   const statusColors = {
     completed: "bg-green-300 text-green-800",
     "in-progress": "bg-blue-300 text-blue-800",
@@ -27,128 +39,65 @@ export function TaskItem({ task, onStatusChange, onToggleImportant }: TaskItemPr
   };
 
   // Fonction pour basculer l'importance
-  const handleToggleImportant = async () => {
-    try {
-      // Appeler l'API pour mettre à jour la tâche
-      const response = await fetch("/api/tasks", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: task.id,
-          important: !task.important, // Inverser l'état actuel
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update task importance");
-      }
-
-      // Mettre à jour l'état local
-      onToggleImportant();
-    } catch (error) {
-      console.error("Error toggling task importance:", error);
-    }
+  const handleToggleImportant = () => {
+    onToggleImportant();
   };
 
   // Fonction pour mettre à jour le statut
-  const handleStatusChange = async (status: "not-started" | "in-progress" | "completed") => {
-    try {
-      // Appeler l'API pour mettre à jour la tâche
-      const response = await fetch("/api/tasks", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: task.id,
-          status, // Nouveau statut
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update task status");
-      }
-
-      // Mettre à jour l'état local
-      onStatusChange(status);
-    } catch (error) {
-      console.error("Error updating task status:", error);
-    }
+  const handleStatusChange = (status: "not-started" | "in-progress" | "completed") => {
+    onStatusChange(status);
   };
-  const handleDeleteTask = async () => {
-    try {
-      // Appeler l'API pour mettre à jour la tâche
-      const response = await fetch("/api/tasks", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: task.id,
-        }),  
-      });
 
-      if (!response.ok) {
-        throw new Error("Failed to update task status");
-      }
-    } catch (error) {
-      console.error("Error updating task status:", error);
-    }
+  // Fonction pour supprimer la tâche
+  const handleDelete = () => {
+    onDelete();
   };
+
   return (
-    <>
-      <Card className="transform transition-all hover:scale-[1.01] hover:shadow-lg">
-        <CardContent className="p-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleToggleImportant} // Utiliser handleToggleImportant
-              className={task.important ? "text-yellow-500" : "text-gray-300"}
-            >
-              <Star className="h-5 w-5" fill={task.important ? "currentColor" : "none"} />
-              <span className="sr-only">Toggle important</span>
-            </Button>
-
-            <div>
-              <h3 className="font-medium">{task.title}</h3>
-              <p className="text-sm text-muted-foreground">{new Date(task.date).toLocaleDateString()}</p>
-            </div>
-          </div>
-            <div>
-              <Button onClick={handleDeleteTask} className="bg-red-600 hover:bg-red-400 rounded-full">
-                <Trash className="h-4 w-4 text-white hover:text-black cursor-pointer" />
-                <span className="sr-only">Supprimer</span>
-              </Button>
-            </div>
-          <div className="flex items-center space-x-2">
-            <Badge
-              variant="outline"
-              className={`flex items-center gap-1 ${statusColors[task.status as keyof typeof statusColors]}`}
-            >
-              {statusIcons[task.status as keyof typeof statusIcons]}
-              {task.status === "in-progress"
-                ? "In Progress"
-                : task.status === "not-started"
-                  ? "Not Started"
-                  : "Completed"}
+    <Card className="p-4 mb-2">
+      <div className="flex items-start justify-between">
+        <div className="space-y-1">
+          <h3 className="font-medium">{task.title}</h3>
+          {task.description && (
+            <p className="text-sm text-muted-foreground">{task.description}</p>
+          )}
+          <div className="flex items-center gap-2">
+            <Badge variant={task.important || task.isImportant ? "default" : "secondary"}>
+              {statusLabels[task.status]}
             </Badge>
-
-            <Select value={task.status} onValueChange={handleStatusChange}> {/* Utiliser handleStatusChange */}
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="not-started">Not Started</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
+            <span className="text-sm text-muted-foreground">
+              {task.dueDate && format(new Date(task.dueDate), "PPP", { locale: fr })}
+            </span>
           </div>
-        </CardContent>
-      </Card>
-    </>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select 
+            value={task.status} 
+            onValueChange={(value) => handleStatusChange(value as "not-started" | "in-progress" | "completed")}
+          >
+            <SelectTrigger className="w-[130px]">
+              <SelectValue placeholder="Statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="not-started">Non commencé</SelectItem>
+              <SelectItem value="in-progress">En cours</SelectItem>
+              <SelectItem value="completed">Terminé</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleToggleImportant}
+            className={task.important || task.isImportant ? "text-yellow-500" : "text-muted-foreground"}
+          >
+            <Star className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={handleDelete}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </Card>
   );
 }

@@ -10,40 +10,23 @@ import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { SignedIn, SignedOut } from "@clerk/nextjs"
 import { usePathname } from "next/navigation"
+import { useLanguage } from "@/hooks/use-language"
 
 export default function LandingNavbar() {
   const { theme, setTheme } = useTheme()
-  const [language, setLanguage] = useState<"fr" | "en">("fr")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname();
-  const toggleLanguage = () => {
-    setLanguage(language === "fr" ? "en" : "fr")
-  }
+  const { language, setLanguage, t } = useLanguage();
 
-  const translations = {
-    fr: {
-      features: "Fonctionnalités",
-      pricing: "Tarifs",
-      testimonials: "Témoignages",
-      contact : "Contactez nous",
-      login: "Connexion",
-      signup: "S'inscrire",
-      switchToSignup: "Pas de compte ? S'inscrire",
-      switchToLogin: "Déjà un compte ? Se connecter",
-    },
-    en: {
-      features: "Features",
-      pricing: "Pricing",
-      contact : "Contact us",
-      testimonials: "Testimonials",
-      login: "Login",
-      signup: "Sign Up",
-      switchToSignup: "No account? Sign up",
-      switchToLogin: "Already have an account? Log in",
-    },
-  }
-
-  const t = translations[language]
+  // Vérifier si les traductions sont des chaînes de caractères ou des objets
+  const featuresText = typeof t.features === 'string' ? t.features : 'Features';
+  const pricingText = typeof t.pricing === 'string' ? t.pricing : 'Pricing';
+  const testimonialsText = typeof t.testimonials === 'string' ? t.testimonials : 'Testimonials';
+  const loginText = typeof t.login === 'string' ? t.login : 'Login';
+  const signupText = typeof t.signup === 'string' ? t.signup : 'Sign Up';
+  const goToDashboardText = t.hero && typeof t.hero.goToDashboard === 'string' 
+    ? t.hero.goToDashboard 
+    : 'Go to Dashboard';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -58,8 +41,6 @@ export default function LandingNavbar() {
               height={120} 
               priority 
             />
-
-            {/* Logo sombre (visible en mode dark) */}
             <Image 
               className="hidden dark:block" 
               src="/logo-dark.png" 
@@ -74,16 +55,16 @@ export default function LandingNavbar() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           <Link href="#features" className="text-sm font-medium hover:text-primary">
-            {t.features}
+            {featuresText}
           </Link>
           <Link href="#pricing" className="text-sm font-medium hover:text-primary">
-            {t.pricing}
+            {pricingText}
           </Link>
-          <Link href="#" className="text-sm font-medium hover:text-primary">
-            {t.contact}
+          <Link href="#testimonials" className="text-sm font-medium hover:text-primary">
+            {testimonialsText}
           </Link>
-          <Link href="#" className="text-sm font-medium hover:text-primary">
-            Blog
+          <Link href="#faq" className="text-sm font-medium hover:text-primary">
+            FAQ
           </Link>
         </nav>
 
@@ -98,99 +79,139 @@ export default function LandingNavbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setLanguage("fr")}>
-                <span className={cn("mr-2", language === "fr" && "text-primary")}>🇫🇷</span> Français
+                Français
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setLanguage("en")}>
-                <span className={cn("mr-2", language === "en" && "text-primary")}>🇬🇧</span> English
+                English
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>         
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                {theme === "light" ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTheme("light")}>
+                Light
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("dark")}>
+                Dark
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("system")}>
+                System
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <SignedOut>
-            {(pathname === "/sign-in" || pathname === "/sign-up") ? null : (
-              <>
-                <Button size="lg" className="bg-primary hover:bg-primary/90">
-                  <Link href="/sign-in">
-                    Connexion
-                  </Link>
-                </Button>                
-              </>
-            )}
-          </SignedOut>
-          <SignedIn>
-            <Button size="lg" className="bg-primary hover:bg-primary/90">
-              <Link href="/dashboard">
-                Dashboard
+            <div className="flex items-center gap-2">
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  {loginText}
+                </Button>
               </Link>
-            </Button>
+              <Link href="/register">
+                <Button size="sm">
+                  {signupText}
+                </Button>
+              </Link>
+            </div>
+          </SignedOut>
+
+          <SignedIn>
+            <Link href="/dashboard">
+              <Button size="sm">
+                {goToDashboardText}
+              </Button>
+            </Link>
           </SignedIn>
         </div>
 
-        {/* Mobile Menu Button */}
-        <div className="flex md:hidden">
-          <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
-        </div>
+        {/* Mobile menu button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
+          <span className="sr-only">Toggle menu</span>
+        </Button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t py-4">
-          <div className="container space-y-4">
-            <nav className="flex flex-col space-y-4">
+        <div className="md:hidden">
+          <div className="space-y-1 px-2 pb-3 pt-2">
+            <Link
+              href="#features"
+              className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {featuresText}
+            </Link>
+            <Link
+              href="#pricing"
+              className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {pricingText}
+            </Link>
+            <Link
+              href="#testimonials"
+              className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {testimonialsText}
+            </Link>
+            <Link
+              href="#faq"
+              className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              FAQ
+            </Link>
+          </div>
+          <div className="border-t border-border px-2 py-3">
+            <SignedOut>
+              <div className="space-y-2">
+                <Link
+                  href="/login"
+                  className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {loginText}
+                </Link>
+                <Link
+                  href="/register"
+                  className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {signupText}
+                </Link>
+              </div>
+            </SignedOut>
+            <SignedIn>
               <Link
-                href="#features"
-                className="text-sm font-medium hover:text-primary"
+                href="/dashboard"
+                className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {t.features}
+                {goToDashboardText}
               </Link>
-              <Link
-                href="#pricing"
-                className="text-sm font-medium hover:text-primary"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t.pricing}
-              </Link>
-              <Link
-                href="#testimonials"
-                className="text-sm font-medium hover:text-primary"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t.testimonials}
-              </Link>
-            </nav>
-            <div className="flex items-center space-x-4 pt-4 border-t">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  toggleLanguage()
-                  setMobileMenuOpen(false)
-                }}
-              >
-                <Globe className="h-5 w-5" />
-                <span className="sr-only">Toggle language</span>
-              </Button>
-              <Button
-                variant="ghost"  
-                size="icon"
-                onClick={() => {
-                  setTheme(theme === "dark" ? "light" : "dark")
-                  setMobileMenuOpen(false)
-                }}
-              >
-                <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>              
-            </div>
+            </SignedIn>
           </div>
         </div>
       )}

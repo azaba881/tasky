@@ -1,8 +1,61 @@
+"use client";
+
 import { BarChart2, Calendar, CheckCircle, Star, Users, Zap } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Card, CardContent } from "../ui/card";
+import { useLanguage } from "@/hooks/use-language";
 
-export default function Features(){
+export default function Features() {
+    const { t } = useLanguage();
+
+    // Vérifier si les traductions sont des chaînes de caractères ou des objets
+    const featuresText = typeof t.features === 'string' ? t.features : 'Features';
+    const featuresTitle = t.features && typeof t.features.title === 'string' ? t.features.title : 'Everything you need';
+    const featuresDescription = t.features && typeof t.features.description === 'string' ? t.features.description : 'Tasky combines the best tools to help you stay organized and productive.';
+    
+    // Vérifier les sous-sections
+    const taskManagementTitle = t.features && t.features.taskManagement && typeof t.features.taskManagement.title === 'string' 
+        ? t.features.taskManagement.title 
+        : 'Task Management';
+    const taskManagementDescription = t.features && t.features.taskManagement && typeof t.features.taskManagement.description === 'string' 
+        ? t.features.taskManagement.description 
+        : 'Create, organize, and track your tasks with an intuitive interface.';
+    
+    const calendarTitle = t.features && t.features.calendar && typeof t.features.calendar.title === 'string' 
+        ? t.features.calendar.title 
+        : 'Calendar View';
+    const calendarDescription = t.features && t.features.calendar && typeof t.features.calendar.description === 'string' 
+        ? t.features.calendar.description 
+        : 'Visualize your tasks in a calendar to better plan your time.';
+    
+    const prioritiesTitle = t.features && t.features.priorities && typeof t.features.priorities.title === 'string' 
+        ? t.features.priorities.title 
+        : 'Priority Tasks';
+    const prioritiesDescription = t.features && t.features.priorities && typeof t.features.priorities.description === 'string' 
+        ? t.features.priorities.description 
+        : 'Mark important tasks to never miss what really matters.';
+    
+    const statsTitle = t.features && t.features.stats && typeof t.features.stats.title === 'string' 
+        ? t.features.stats.title 
+        : 'Detailed Statistics';
+    const statsDescription = t.features && t.features.stats && typeof t.features.stats.description === 'string' 
+        ? t.features.stats.description 
+        : 'Track your productivity with clear graphs and statistics.';
+    
+    const collaborationTitle = t.features && t.features.collaboration && typeof t.features.collaboration.title === 'string' 
+        ? t.features.collaboration.title 
+        : 'Collaboration';
+    const collaborationDescription = t.features && t.features.collaboration && typeof t.features.collaboration.description === 'string' 
+        ? t.features.collaboration.description 
+        : 'Share tasks and collaborate with your team in real-time.';
+    
+    const remindersTitle = t.features && t.features.reminders && typeof t.features.reminders.title === 'string' 
+        ? t.features.reminders.title 
+        : 'Smart Reminders';
+    const remindersDescription = t.features && t.features.reminders && typeof t.features.reminders.description === 'string' 
+        ? t.features.reminders.description 
+        : 'Receive notifications to never miss an important deadline.';
+
     return (
         <div>
             <section id="features" className="py-20">
@@ -10,13 +63,13 @@ export default function Features(){
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                     <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                        Fonctionnalités
+                        {featuresText}
                     </Badge>
                     <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                        Tout ce dont vous avez besoin
+                        {featuresTitle}
                     </h2>
                     <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                        Tasky combine les meilleurs outils pour vous aider à rester organisé et productif.
+                        {featuresDescription}
                     </p>
                     </div>
                 </div>
@@ -26,9 +79,9 @@ export default function Features(){
                         <div className="p-2 bg-primary/10 rounded-full">
                         <CheckCircle className="h-6 w-6 text-primary" />
                         </div>
-                        <h3 className="text-xl font-bold">Gestion des tâches</h3>
+                        <h3 className="text-xl font-bold">{taskManagementTitle}</h3>
                         <p className="text-muted-foreground">
-                        Créez, organisez et suivez vos tâches avec une interface intuitive.
+                        {taskManagementDescription}
                         </p>
                     </CardContent>
                     </Card>
@@ -37,9 +90,9 @@ export default function Features(){
                         <div className="p-2 bg-primary/10 rounded-full">
                         <Calendar className="h-6 w-6 text-primary" />
                         </div>
-                        <h3 className="text-xl font-bold">Vue calendrier</h3>
+                        <h3 className="text-xl font-bold">{calendarTitle}</h3>
                         <p className="text-muted-foreground">
-                        Visualisez vos tâches dans un calendrier pour mieux planifier votre temps.
+                        {calendarDescription}
                         </p>
                     </CardContent>
                     </Card>
@@ -48,9 +101,9 @@ export default function Features(){
                         <div className="p-2 bg-primary/10 rounded-full">
                         <Star className="h-6 w-6 text-primary" />
                         </div>
-                        <h3 className="text-xl font-bold">Tâches prioritaires</h3>
+                        <h3 className="text-xl font-bold">{prioritiesTitle}</h3>
                         <p className="text-muted-foreground">
-                        Marquez les tâches importantes pour ne jamais manquer ce qui compte vraiment.
+                        {prioritiesDescription}
                         </p>
                     </CardContent>
                     </Card>
@@ -59,9 +112,9 @@ export default function Features(){
                         <div className="p-2 bg-primary/10 rounded-full">
                         <BarChart2 className="h-6 w-6 text-primary" />
                         </div>
-                        <h3 className="text-xl font-bold">Statistiques détaillées</h3>
+                        <h3 className="text-xl font-bold">{statsTitle}</h3>
                         <p className="text-muted-foreground">
-                        Suivez votre productivité avec des graphiques et des statistiques claires.
+                        {statsDescription}
                         </p>
                     </CardContent>
                     </Card>
@@ -70,9 +123,9 @@ export default function Features(){
                         <div className="p-2 bg-primary/10 rounded-full">
                         <Users className="h-6 w-6 text-primary" />
                         </div>
-                        <h3 className="text-xl font-bold">Collaboration</h3>
+                        <h3 className="text-xl font-bold">{collaborationTitle}</h3>
                         <p className="text-muted-foreground">
-                        Partagez des tâches et collaborez avec votre équipe en temps réel.
+                        {collaborationDescription}
                         </p>
                     </CardContent>
                     </Card>
@@ -81,9 +134,9 @@ export default function Features(){
                         <div className="p-2 bg-primary/10 rounded-full">
                         <Zap className="h-6 w-6 text-primary" />
                         </div>
-                        <h3 className="text-xl font-bold">Rappels intelligents</h3>
+                        <h3 className="text-xl font-bold">{remindersTitle}</h3>
                         <p className="text-muted-foreground">
-                        Recevez des notifications pour ne jamais manquer une échéance importante.
+                        {remindersDescription}
                         </p>
                     </CardContent>
                     </Card>

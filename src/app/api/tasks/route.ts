@@ -42,11 +42,36 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { title, status, important, date, generateSuggestions } = body;
-    const { userId } = await auth(); // Récupérer l'ID de l'utilisateur connecté
+    const { userId } = await auth();
 
-    // Vérifier si l'utilisateur est connecté
     if (!userId) {
       return NextResponse.json({ error: "Utilisateur non connecté" }, { status: 401 });
+    }
+
+    // Si `generateSuggestions` est true, générer des suggestions avec OpenAI
+    if (generateSuggestions && title && title.length >= 3) {
+      const response = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "Tu es un assistant qui aide à décomposer les tâches en sous-tâches plus petites et plus gérables."
+          },
+          {
+            role: "user",
+            content: `Pour la tâche suivante : "${title}", donne-moi 3 sous-tâches spécifiques et actionnables. Format : liste numérotée.`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 150
+      });
+
+      const suggestions = response.choices[0].message.content
+        ?.split('\n')
+        .filter(line => line.trim().length > 0)
+        .map(line => line.replace(/^\d+\.\s*/, '').trim());
+
+      return NextResponse.json({ suggestions }, { status: 200 });
     }
 
     // Vérifier si l'utilisateur existe dans Prisma
@@ -59,27 +84,9 @@ export async function POST(request: Request) {
       existingUser = await prisma.user.create({
         data: {
           id: userId,
-          email: "email@example.com", // Remplacez par l'email réel depuis Clerk
+          email: "email@example.com", // À remplacer par l'email réel depuis Clerk
         },
       });
-    }
-
-    // Si `generateSuggestions` est true, générer des suggestions avec OpenAI
-    if (generateSuggestions && title && title.length >= 3) {
-      const response = await openai.completions.create({
-        model: "text-davinci-003", // Modèle GPT-3.5
-        prompt: `Donne-moi des idées de tâches basées sur : "${title}". Donne 3 suggestions.`,
-        max_tokens: 50, // Limite de mots pour éviter une réponse trop longue
-        temperature: 0.7, // Niveau de créativité
-      });
-
-      // Extraire et formater les suggestions
-      const suggestions = response.choices[0].text
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-      return NextResponse.json({ suggestions }, { status: 200 });
     }
 
     // Valider les données reçues pour la création de tâche
@@ -92,9 +99,9 @@ export async function POST(request: Request) {
       data: {
         title,
         status,
-        important: important || false, // Valeur par défaut si non fournie
+        important: important || false,
         date: new Date(date),
-        userId: existingUser.id, // Associer la tâche à l'utilisateur
+        userId: existingUser.id,
       },
     });
 
@@ -115,7 +122,7 @@ export async function PUT(request: Request) {
 
     // Vérifier si l'ID est fourni
     if (!id) {
-      return NextResponse.json({ error: "L’ID de la tâche est manquant" }, { status: 400 });
+      return NextResponse.json({ error: "L'ID de la tâche est manquant" }, { status: 400 });
     }
 
     // Préparer les données à mettre à jour
@@ -139,21 +146,41 @@ export async function PUT(request: Request) {
 // DELETE /api/tasks
 export async function DELETE(request: Request) {
   try {
-    const body = await request.json();
-    const { id } = body;
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    const { userId } = await auth();
 
-    // Vérifier si l'ID est fourni
+    if (!userId) {
+      return NextResponse.json({ error: "Utilisateur non connecté" }, { status: 401 });
+    }
+
     if (!id) {
-      return NextResponse.json({ error: "ID de la tâche manquant" }, { status: 400 });
+      return NextResponse.json({ error: "ID de tâche manquant" }, { status: 400 });
+    }
+
+    // Vérifier que la tâche appartient à l'utilisateur
+    const task = await prisma.task.findFirst({
+      where: {
+        id: Number(id),
+        userId: userId
+      }
+    });
+
+    if (!task) {
+      return NextResponse.json({ error: "Tâche non trouvée" }, { status: 404 });
     }
 
     // Supprimer la tâche
-    await prisma.task.delete({ where: { id: Number(id) } });
+    await prisma.task.delete({
+      where: {
+        id: Number(id)
+      }
+    });
 
     // Revalider le cache pour mettre à jour l'affichage
     revalidatePath("/dashboard");
 
-    return new NextResponse(null, { status: 204 });
+    return NextResponse.json({ success: true });
   } catch (error) {
     return handleError(error, "Erreur lors de la suppression de la tâche");
   }

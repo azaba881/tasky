@@ -1,8 +1,10 @@
 export type Task = {
   id: number;
   title: string;
+  description?: string;
   status: "not-started" | "in-progress" | "completed"; // Union de types littéraux
-  date: Date;
+  dueDate: string; // Date au format ISO string
   important: boolean;
-  userId: string; // Optionnel
+  isImportant?: boolean; // Pour la compatibilité avec le code existant
+  userId?: string; // Optionnel
 };

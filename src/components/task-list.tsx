@@ -1,68 +1,114 @@
 "use client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskItem } from "@/components/task-item";
-import { Task } from "@/types"; // Importez le type Task
+import { Task } from "@/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 
-type TaskListProps = {
+export type TaskListProps = {
   tasks: Task[];
-  onStatusChange: (id: number, status: "not-started" | "in-progress" | "completed") => void;
-  onToggleImportant: (id: number) => void;
+  onTaskUpdate: (task: Task) => void;
+  onTaskDelete: (taskId: string) => void;
 };
 
-export function TaskList({ tasks, onStatusChange, onToggleImportant }: TaskListProps) {
-  // Get today's date for filtering
-  const today = new Date();
+export function TaskList({ tasks, onTaskUpdate, onTaskDelete }: TaskListProps) {
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+
+  // Fonction pour vérifier si une date est aujourd'hui
+  const isToday = (dateString: string | undefined) => {
+    if (!dateString) return false;
+    const today = new Date();
+    const taskDate = new Date(dateString);
+    return (
+      today.getDate() === taskDate.getDate() &&
+      today.getMonth() === taskDate.getMonth() &&
+      today.getFullYear() === taskDate.getFullYear()
+    );
+  };
+
+  // Filtrer les tâches en fonction du statut sélectionné
+  const filteredTasks = tasks.filter(task => {
+    if (selectedStatus === "all") return true;
+    return task.status === selectedStatus;
+  });
+
+  // Filtrer les tâches pour aujourd'hui
+  const todayTasks = tasks.filter(task => isToday(task.dueDate || task.date));
+
+  // Filtrer les tâches importantes
+  const importantTasks = tasks.filter(task => task.important || task.isImportant);
 
   return (
-    <Tabs defaultValue="all" className="w-full">
-      <TabsList className="grid grid-cols-3 mb-6">
-        <TabsTrigger value="all">All</TabsTrigger>
-        <TabsTrigger value="today">Today</TabsTrigger>
-        <TabsTrigger value="important">Important</TabsTrigger>
-      </TabsList>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center mb-4">
+        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filtrer par statut" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les statuts</SelectItem>
+            <SelectItem value="not-started">Non commencé</SelectItem>
+            <SelectItem value="in-progress">En cours</SelectItem>
+            <SelectItem value="completed">Terminé</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      {/* All Tasks Tab */}
-      <TabsContent value="all" className="space-y-4">
-        {tasks.map((task) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            onStatusChange={(status) => onStatusChange(task.id, status)}
-            onToggleImportant={() => onToggleImportant(task.id)}
-          />
-        ))}
-      </TabsContent>
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="all">Toutes</TabsTrigger>
+          <TabsTrigger value="today">Aujourd'hui</TabsTrigger>
+          <TabsTrigger value="important">Importantes</TabsTrigger>
+        </TabsList>
 
-      {/* Today's Tasks Tab */}
-      <TabsContent value="today" className="space-y-4">
-        {tasks
-          .filter((task) => {
-            const taskDate = new Date(task.date);
-            return taskDate.toDateString() === today.toDateString();
-          })
-          .map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onStatusChange={(status) => onStatusChange(task.id, status)}
-              onToggleImportant={() => onToggleImportant(task.id)}
-            />
-          ))}
-      </TabsContent>
+        <TabsContent value="all">
+          {filteredTasks.length === 0 ? (
+            <p className="text-center text-muted-foreground">Aucune tâche disponible</p>
+          ) : (
+            filteredTasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onStatusChange={(status) => onTaskUpdate({ ...task, status })}
+                onToggleImportant={() => onTaskUpdate({ ...task, important: !task.important, isImportant: !task.isImportant })}
+                onDelete={() => onTaskDelete(task.id.toString())}
+              />
+            ))
+          )}
+        </TabsContent>
 
-      {/* Important Tasks Tab */}
-      <TabsContent value="important" className="space-y-4">
-        {tasks
-          .filter((task) => task.important)
-          .map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onStatusChange={(status) => onStatusChange(task.id, status)}
-              onToggleImportant={() => onToggleImportant(task.id)}
-            />
-          ))}
-      </TabsContent>
-    </Tabs>
+        <TabsContent value="today">
+          {todayTasks.length === 0 ? (
+            <p className="text-center text-muted-foreground">Aucune tâche pour aujourd'hui</p>
+          ) : (
+            todayTasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onStatusChange={(status) => onTaskUpdate({ ...task, status })}
+                onToggleImportant={() => onTaskUpdate({ ...task, important: !task.important, isImportant: !task.isImportant })}
+                onDelete={() => onTaskDelete(task.id.toString())}
+              />
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="important">
+          {importantTasks.length === 0 ? (
+            <p className="text-center text-muted-foreground">Aucune tâche importante</p>
+          ) : (
+            importantTasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onStatusChange={(status) => onTaskUpdate({ ...task, status })}
+                onToggleImportant={() => onTaskUpdate({ ...task, important: !task.important, isImportant: !task.isImportant })}
+                onDelete={() => onTaskDelete(task.id.toString())}
+              />
+            ))
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
