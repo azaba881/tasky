@@ -42,7 +42,7 @@ export function TaskItem({ task, onStatusChange, onToggleImportant, onDelete }: 
         throw new Error("Échec de la mise à jour de l'importance");
       }
 
-      const updatedTask = await response.json();
+      await response.json();
       onToggleImportant();
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'importance:", error);
@@ -67,7 +67,7 @@ export function TaskItem({ task, onStatusChange, onToggleImportant, onDelete }: 
         throw new Error("Échec de la mise à jour du statut");
       }
 
-      const updatedTask = await response.json();
+      await response.json();
       onStatusChange(status);
     } catch (error) {
       console.error("Erreur lors de la mise à jour du statut:", error);

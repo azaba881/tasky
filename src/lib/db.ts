@@ -17,6 +17,12 @@ export async function createTables() {
 export async function getTasks() {
   try {
     console.log("Tentative de récupération des tâches...");
+    console.log("URL de la base de données:", process.env.DATABASE_URL);
+    
+    // Vérifier la connexion à la base de données
+    await prisma.$connect();
+    console.log("Connexion à la base de données réussie");
+    
     const tasks = await prisma.task.findMany({
       orderBy: {
         createdAt: 'desc'
@@ -27,6 +33,10 @@ export async function getTasks() {
   } catch (error) {
     console.error("Erreur détaillée lors de la récupération des tâches:", error);
     throw new Error(`Erreur lors de la récupération des tâches: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  } finally {
+    // Fermer la connexion à la base de données
+    await prisma.$disconnect();
+    console.log("Connexion à la base de données fermée");
   }
 }
 
