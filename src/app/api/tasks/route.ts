@@ -1,187 +1,99 @@
-import OpenAI from "openai";
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
-import { auth } from "@clerk/nextjs/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// Helper pour gérer les erreurs
-function handleError(error: unknown, message: string) {
-  console.error(`${message}:`, error);
-  return NextResponse.json({ error: message }, { status: 500 });
-}
+import { getTasks, createTask, updateTask, deleteTask } from "@/lib/db";
 
 // GET /api/tasks
 export async function GET() {
   try {
-    const { userId } = await auth(); // Récupérer l'ID de l'utilisateur connecté
-
-    // Vérifier si l'utilisateur est connecté
-    if (!userId) {
-      return NextResponse.json({ error: "Utilisateur non connecté" }, { status: 401 });
-    }
-
-    // Récupérer les tâches de l'utilisateur connecté
-    const tasks = await prisma.task.findMany({
-      where: { userId }, // Filtrer par ID de l'utilisateur
-      orderBy: { date: "desc" }, // Trier par date (descendant)
-    });
-
+    console.log("GET /api/tasks - Début de la requête");
+    const tasks = await getTasks();
+    console.log("GET /api/tasks - Succès");
     return NextResponse.json(tasks);
   } catch (error) {
-    return handleError(error, "Erreur lors de la récupération des tâches");
+    console.error("GET /api/tasks - Erreur:", error);
+    return NextResponse.json(
+      { error: "Erreur lors de la récupération des tâches" },
+      { status: 500 }
+    );
   }
 }
 
 // POST /api/tasks
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { title, status, important, date, generateSuggestions } = body;
-    const { userId } = await auth();
+    console.log("POST /api/tasks - Début de la requête");
+    const task = await request.json();
+    console.log("POST /api/tasks - Données reçues:", task);
 
-    if (!userId) {
-      return NextResponse.json({ error: "Utilisateur non connecté" }, { status: 401 });
+    if (!task.title) {
+      console.error("POST /api/tasks - Titre manquant");
+      return NextResponse.json(
+        { error: "Le titre est requis" },
+        { status: 400 }
+      );
     }
 
-    // Si `generateSuggestions` est true, générer des suggestions avec OpenAI
-    if (generateSuggestions && title && title.length >= 3) {
-      const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "Tu es un assistant qui aide à décomposer les tâches en sous-tâches plus petites et plus gérables."
-          },
-          {
-            role: "user",
-            content: `Pour la tâche suivante : "${title}", donne-moi 3 sous-tâches spécifiques et actionnables. Format : liste numérotée.`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 150
-      });
-
-      const suggestions = response.choices[0].message.content
-        ?.split('\n')
-        .filter(line => line.trim().length > 0)
-        .map(line => line.replace(/^\d+\.\s*/, '').trim());
-
-      return NextResponse.json({ suggestions }, { status: 200 });
-    }
-
-    // Vérifier si l'utilisateur existe dans Prisma
-    let existingUser = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    // Si l'utilisateur n'existe pas, le créer
-    if (!existingUser) {
-      existingUser = await prisma.user.create({
-        data: {
-          id: userId,
-          email: "email@example.com", // À remplacer par l'email réel depuis Clerk
-        },
-      });
-    }
-
-    // Valider les données reçues pour la création de tâche
-    if (!title || !status || !date) {
-      return NextResponse.json({ error: "Données manquantes" }, { status: 400 });
-    }
-
-    // Créer une nouvelle tâche
-    const newTask = await prisma.task.create({
-      data: {
-        title,
-        status,
-        important: important || false,
-        date: new Date(date),
-        userId: existingUser.id,
-      },
-    });
-
-    // Revalider le cache pour mettre à jour l'affichage
-    revalidatePath("/dashboard");
-
-    return NextResponse.json(newTask, { status: 201 });
+    const newTask = await createTask(task);
+    console.log("POST /api/tasks - Tâche créée:", newTask);
+    return NextResponse.json(newTask);
   } catch (error) {
-    return handleError(error, "Erreur lors de la création de la tâche");
+    console.error("POST /api/tasks - Erreur:", error);
+    return NextResponse.json(
+      { error: "Erreur lors de la création de la tâche" },
+      { status: 500 }
+    );
   }
 }
 
 // PUT /api/tasks
 export async function PUT(request: Request) {
   try {
-    const body = await request.json();
-    const { id, status, important } = body;
+    console.log("PUT /api/tasks - Début de la requête");
+    const { id, ...updates } = await request.json();
+    console.log("PUT /api/tasks - Données reçues:", { id, updates });
 
-    // Vérifier si l'ID est fourni
     if (!id) {
-      return NextResponse.json({ error: "L'ID de la tâche est manquant" }, { status: 400 });
+      console.error("PUT /api/tasks - ID manquant");
+      return NextResponse.json(
+        { error: "L'ID est requis" },
+        { status: 400 }
+      );
     }
 
-    // Préparer les données à mettre à jour
-    const updateData: { status: string; important?: boolean } = { status };
-    if (typeof important === "boolean") {
-      updateData.important = important;
-    }
-
-    // Mettre à jour la tâche
-    const updatedTask = await prisma.task.update({
-      where: { id: Number(id) },
-      data: updateData,
-    });
-
+    const updatedTask = await updateTask(id, updates);
+    console.log("PUT /api/tasks - Tâche mise à jour:", updatedTask);
     return NextResponse.json(updatedTask);
   } catch (error) {
-    return handleError(error, "Erreur lors de la mise à jour de la tâche");
+    console.error("PUT /api/tasks - Erreur:", error);
+    return NextResponse.json(
+      { error: "Erreur lors de la mise à jour de la tâche" },
+      { status: 500 }
+    );
   }
 }
 
 // DELETE /api/tasks
 export async function DELETE(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Utilisateur non connecté" }, { status: 401 });
-    }
+    console.log("DELETE /api/tasks - Début de la requête");
+    const { id } = await request.json();
+    console.log("DELETE /api/tasks - ID reçu:", id);
 
     if (!id) {
-      return NextResponse.json({ error: "ID de tâche manquant" }, { status: 400 });
+      console.error("DELETE /api/tasks - ID manquant");
+      return NextResponse.json(
+        { error: "L'ID est requis" },
+        { status: 400 }
+      );
     }
 
-    // Vérifier que la tâche appartient à l'utilisateur
-    const task = await prisma.task.findFirst({
-      where: {
-        id: Number(id),
-        userId: userId
-      }
-    });
-
-    if (!task) {
-      return NextResponse.json({ error: "Tâche non trouvée" }, { status: 404 });
-    }
-
-    // Supprimer la tâche
-    await prisma.task.delete({
-      where: {
-        id: Number(id)
-      }
-    });
-
-    // Revalider le cache pour mettre à jour l'affichage
-    revalidatePath("/dashboard");
-
+    await deleteTask(id);
+    console.log("DELETE /api/tasks - Tâche supprimée");
     return NextResponse.json({ success: true });
   } catch (error) {
-    return handleError(error, "Erreur lors de la suppression de la tâche");
+    console.error("DELETE /api/tasks - Erreur:", error);
+    return NextResponse.json(
+      { error: "Erreur lors de la suppression de la tâche" },
+      { status: 500 }
+    );
   }
 }
