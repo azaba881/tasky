@@ -11,7 +11,7 @@ export default function LandingPage() {
       <LandingNavbar />
       <Hero/>      
       <Features/>
-      <Pricing/>
+      <Pricing/>   
       <Cta/>
       <Footer/>
     </div>

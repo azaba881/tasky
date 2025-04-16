@@ -1,23 +1,23 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { addDays, format, isSameDay } from "date-fns"
+import { format } from "date-fns"
 import { Task } from "@/types"
 
-type CalendarViewProps = {
+interface CalendarViewProps {
   tasks: Task[];
-};
+}
 
 export function CalendarView({ tasks }: CalendarViewProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
 
   // Organiser les tâches par date
   const tasksByDate = tasks.reduce((acc, task) => {
-    // Utiliser dueDate ou date, avec priorité à dueDate
-    const dateString = task.dueDate || task.date;
+    // Utiliser uniquement dueDate
+    const dateString = task.dueDate;
     
     // Vérifier si dateString est une chaîne valide
     if (!dateString || typeof dateString !== 'string') {
@@ -44,9 +44,6 @@ export function CalendarView({ tasks }: CalendarViewProps) {
     
     return acc;
   }, {} as Record<string, Task[]>);
-
-  // Trouver les dates qui ont des tâches
-  const datesWithTasks = Object.keys(tasksByDate).map(date => new Date(date));
 
   // Trouver les tâches pour la date sélectionnée
   const selectedDateTasks = selectedDate
@@ -104,7 +101,7 @@ export function CalendarView({ tasks }: CalendarViewProps) {
                       ? "Terminée"
                       : task.status === "in-progress"
                         ? "En cours"
-                        : "Non commencée"}
+                        : "À faire"}
                   </Badge>
                 </div>
               ))}

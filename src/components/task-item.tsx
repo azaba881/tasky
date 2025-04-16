@@ -1,14 +1,13 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Clock, CheckCircle, Trash, Trash2 } from "lucide-react";
+import { Star, Trash2 } from "lucide-react";
 import { Task } from "@/types";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { useLanguage } from "@/hooks/use-language";
 
 type TaskItemProps = {
   task: Task;
@@ -24,20 +23,6 @@ const statusLabels = {
 };
 
 export function TaskItem({ task, onStatusChange, onToggleImportant, onDelete }: TaskItemProps) {
-  const { t } = useLanguage();
-  
-  const statusColors = {
-    completed: "bg-green-300 text-green-800",
-    "in-progress": "bg-blue-300 text-blue-800",
-    "not-started": "bg-gray-300 text-gray-800",
-  };
-
-  const statusIcons = {
-    completed: <CheckCircle className="h-4 w-4" />,
-    "in-progress": <Clock className="h-4 w-4" />,
-    "not-started": <Clock className="h-4 w-4 text-red-600" />,
-  };
-
   // Fonction pour basculer l'importance
   const handleToggleImportant = () => {
     onToggleImportant();

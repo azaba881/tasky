@@ -8,14 +8,12 @@ import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { SignedIn, UserButton } from "@clerk/nextjs"
-import { useLanguage } from "@/hooks/use-language"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 export default function AppNavbar() {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const { language, setLanguage } = useLanguage()
 
   // Hydration fix
   useEffect(() => {
@@ -81,15 +79,7 @@ export default function AppNavbar() {
                     <Globe className="h-4 w-4" />
                     <span className="sr-only">Toggle language</span>
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setLanguage("fr")}>
-                    Français
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setLanguage("en")}>
-                    English
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
+                </DropdownMenuTrigger>                
               </DropdownMenu>
 
               <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>

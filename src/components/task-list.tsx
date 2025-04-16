@@ -1,9 +1,9 @@
 "use client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskItem } from "@/components/task-item";
-import { Task } from "@/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
+import { Task } from "@/types";
 
 export type TaskListProps = {
   tasks: Task[];
@@ -57,7 +57,7 @@ export function TaskList({ tasks, onTaskUpdate, onTaskDelete }: TaskListProps) {
       <Tabs defaultValue="all" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="all">Toutes</TabsTrigger>
-          <TabsTrigger value="today">Aujourd'hui</TabsTrigger>
+          <TabsTrigger value="today">Aujourd&apos;hui</TabsTrigger>
           <TabsTrigger value="important">Importantes</TabsTrigger>
         </TabsList>
 
@@ -79,7 +79,7 @@ export function TaskList({ tasks, onTaskUpdate, onTaskDelete }: TaskListProps) {
 
         <TabsContent value="today">
           {todayTasks.length === 0 ? (
-            <p className="text-center text-muted-foreground">Aucune tâche pour aujourd'hui</p>
+            <p className="text-center text-muted-foreground">Aucune tâche pour aujourd&apos;hui</p>
           ) : (
             todayTasks.map((task) => (
               <TaskItem

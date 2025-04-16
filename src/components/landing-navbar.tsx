@@ -5,28 +5,13 @@ import Link from "next/link"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Moon, Sun, Globe, Menu, X } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Moon, Sun } from "lucide-react"
 import Image from "next/image"
 import { SignedIn, SignedOut } from "@clerk/nextjs"
-import { usePathname } from "next/navigation"
-import { useLanguage } from "@/hooks/use-language"
 
 export default function LandingNavbar() {
   const { theme, setTheme } = useTheme()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const pathname = usePathname();
-  const { language, setLanguage, t } = useLanguage();
-
-  // Vérifier si les traductions sont des chaînes de caractères ou des objets
-  const featuresText = typeof t.features === 'string' ? t.features : 'Features';
-  const pricingText = typeof t.pricing === 'string' ? t.pricing : 'Pricing';
-  const testimonialsText = typeof t.testimonials === 'string' ? t.testimonials : 'Testimonials';
-  const loginText = typeof t.login === 'string' ? t.login : 'Login';
-  const signupText = typeof t.signup === 'string' ? t.signup : 'Sign Up';
-  const goToDashboardText = t.hero && typeof t.hero.goToDashboard === 'string' 
-    ? t.hero.goToDashboard 
-    : 'Go to Dashboard';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -55,38 +40,21 @@ export default function LandingNavbar() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           <Link href="#features" className="text-sm font-medium hover:text-primary">
-            {featuresText}
+            Fonctionnalités
           </Link>
           <Link href="#pricing" className="text-sm font-medium hover:text-primary">
-            {pricingText}
+            Abonnements
           </Link>
-          <Link href="#testimonials" className="text-sm font-medium hover:text-primary">
-            {testimonialsText}
-          </Link>
-          <Link href="#faq" className="text-sm font-medium hover:text-primary">
+          {/* <Link href="#testimonials" className="text-sm font-medium hover:text-primary">
+            Témoignages
+          </Link> */}
+          {/* <Link href="#faq" className="text-sm font-medium hover:text-primary">
             FAQ
-          </Link>
+          </Link> */}
         </nav>
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Globe className="h-5 w-5" />
-                <span className="sr-only">Toggle language</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setLanguage("fr")}>
-                Français
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setLanguage("en")}>
-                English
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -95,43 +63,37 @@ export default function LandingNavbar() {
                 ) : (
                   <Moon className="h-5 w-5" />
                 )}
-                <span className="sr-only">Toggle theme</span>
+                <span className="sr-only">Changer le thème</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setTheme("light")}>
-                Light
+                Clair
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme("dark")}>
-                Dark
+                Sombre
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme("system")}>
-                System
+                Système
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
           <SignedOut>
             <div className="flex items-center gap-2">
-              <Link href="/login">
-                <Button variant="ghost" size="sm">
-                  {loginText}
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button size="sm">
-                  {signupText}
-                </Button>
-              </Link>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/sign-in">Connexion</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link href="/sign-up">S&apos;inscrire</Link>
+              </Button>
             </div>
           </SignedOut>
 
           <SignedIn>
-            <Link href="/dashboard">
-              <Button size="sm">
-                {goToDashboardText}
-              </Button>
-            </Link>
+            <Button asChild size="sm">
+              <Link href="/dashboard">Tableau de bord</Link>
+            </Button>
           </SignedIn>
         </div>
 
@@ -143,11 +105,11 @@ export default function LandingNavbar() {
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? (
-            <X className="h-6 w-6" />
+            <span className="h-6 w-6">✕</span>
           ) : (
-            <Menu className="h-6 w-6" />
+            <span className="h-6 w-6">☰</span>
           )}
-          <span className="sr-only">Toggle menu</span>
+          <span className="sr-only">Menu</span>
         </Button>
       </div>
 
@@ -160,21 +122,21 @@ export default function LandingNavbar() {
               className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
               onClick={() => setMobileMenuOpen(false)}
             >
-              {featuresText}
+              Fonctionnalités
             </Link>
             <Link
               href="#pricing"
               className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
               onClick={() => setMobileMenuOpen(false)}
             >
-              {pricingText}
+              Tarifs
             </Link>
             <Link
               href="#testimonials"
               className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
               onClick={() => setMobileMenuOpen(false)}
             >
-              {testimonialsText}
+              Témoignages
             </Link>
             <Link
               href="#faq"
@@ -188,18 +150,18 @@ export default function LandingNavbar() {
             <SignedOut>
               <div className="space-y-2">
                 <Link
-                  href="/login"
+                  href="/sign-in"
                   className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {loginText}
+                  Connexion
                 </Link>
                 <Link
-                  href="/register"
+                  href="/sign-up"
                   className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {signupText}
+                  S&apos;inscrire
                 </Link>
               </div>
             </SignedOut>
@@ -209,7 +171,7 @@ export default function LandingNavbar() {
                 className="block rounded-lg px-3 py-2 text-base font-medium hover:bg-accent"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {goToDashboardText}
+                Tableau de bord
               </Link>
             </SignedIn>
           </div>
