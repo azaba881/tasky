@@ -86,14 +86,14 @@ export function AddTaskButton({ onAddTask }: AddTaskButtonProps) {
     const capitalizedTitle = taskTitle.charAt(0).toUpperCase() + taskTitle.slice(1);
 
     try {
-      const response = await fetch("/api/tasks", {
+      const response = await fetch("/api/tasks", {  
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           title: capitalizedTitle,
-          date: date.toISOString(),
+          dueDate: date.toISOString(),
           status: "not-started",
           important: false,
           userId,

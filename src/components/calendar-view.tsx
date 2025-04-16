@@ -16,8 +16,8 @@ export function CalendarView({ tasks }: CalendarViewProps) {
 
   // Organiser les tâches par date
   const tasksByDate = tasks.reduce((acc, task) => {
-    // Utiliser uniquement dueDate
-    const dateString = task.dueDate;
+    // Utiliser dueDate ou date
+    const dateString = task.dueDate || task.date;
     
     // Vérifier si dateString est une chaîne valide
     if (!dateString || typeof dateString !== 'string') {
@@ -26,7 +26,7 @@ export function CalendarView({ tasks }: CalendarViewProps) {
     
     try {
       const taskDate = new Date(dateString);
-      // Vérifier si la date est valide
+      // Vérifier si la date est valide    
       if (isNaN(taskDate.getTime())) {
         return acc;
       }

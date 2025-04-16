@@ -38,8 +38,30 @@ export default function CalendarPage() {
   }, []);
 
   // Ajouter une nouvelle tâche
-  const addTask = (newTask: Task) => {
+  const addTask = async (newTask: Task) => {
     setTasks((prevTasks) => [...prevTasks, newTask]);
+    
+    // Rafraîchir la liste des tâches
+    try {
+      setLoading(true);
+      const response = await fetch("/api/tasks", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error("Échec du chargement des tâches");
+      }
+      
+      const data = await response.json();
+      setTasks(data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des tâches:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

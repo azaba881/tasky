@@ -24,18 +24,77 @@ const statusLabels = {
 
 export function TaskItem({ task, onStatusChange, onToggleImportant, onDelete }: TaskItemProps) {
   // Fonction pour basculer l'importance
-  const handleToggleImportant = () => {
-    onToggleImportant();
+  const handleToggleImportant = async () => {
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: task.id,
+          important: !task.important,
+          isImportant: !task.isImportant,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Échec de la mise à jour de l'importance");
+      }
+
+      const updatedTask = await response.json();
+      onToggleImportant();
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de l'importance:", error);
+    }
   };
 
   // Fonction pour mettre à jour le statut
-  const handleStatusChange = (status: "not-started" | "in-progress" | "completed") => {
-    onStatusChange(status);
+  const handleStatusChange = async (status: "not-started" | "in-progress" | "completed") => {
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: task.id,
+          status,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Échec de la mise à jour du statut");
+      }
+
+      const updatedTask = await response.json();
+      onStatusChange(status);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du statut:", error);
+    }
   };
 
   // Fonction pour supprimer la tâche
-  const handleDelete = () => {
-    onDelete();
+  const handleDelete = async () => {
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: task.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Échec de la suppression de la tâche");
+      }
+
+      onDelete();
+    } catch (error) {
+      console.error("Erreur lors de la suppression de la tâche:", error);
+    }
   };
 
   return (

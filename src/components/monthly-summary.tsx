@@ -53,7 +53,7 @@ export function MonthlySummary() {
                   ></div>
                   <span className="text-xs mt-2">{item.month}</span>
                 </div>
-              ))}
+              ))}   
             </div>
             <div className="flex justify-between mt-4">
               <span className="text-xs text-muted-foreground">0</span>

@@ -16,7 +16,7 @@ export default function SummaryPage() {
     const fetchTasks = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/tasks", {
+        const response = await fetch("/api/tasks", {  
           method: "GET",
           headers: {
             "Content-Type": "application/json",
