@@ -149,6 +149,9 @@ export function AddTaskButton({ onAddTask }: AddTaskButtonProps) {
                 placeholder="Entrez votre tâche"
               />
               {error && <p className="text-red-500 text-sm">{error}</p>}
+              {isGeneratingSuggestions && (
+                <p className="text-sm text-gray-500">Génération des suggestions...</p>
+              )}
             </div>
 
             {/* Suggestions de tâches */}
